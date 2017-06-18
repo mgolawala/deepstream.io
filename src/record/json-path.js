@@ -1,6 +1,6 @@
 'use strict'
-
-const SPLIT_REG_EXP = /[[\]]/g
+/* eslint-disable */
+const SPLIT_REG_EXP = /[.[\]]/g
 
 /**
  * This class allows to set or get specific
@@ -11,16 +11,15 @@ const SPLIT_REG_EXP = /[[\]]/g
  *
  * @constructor
  */
-function setValue (root, path, value) {
+function setValue(node, path, value) {
   const tokens = tokenize(path)
-  let node = root
 
   let i
   for (i = 0; i < tokens.length - 1; i++) {
     const token = tokens[i]
     if (node[token] !== undefined) {
       node = node[token]
-    } else if (tokens[i + 1] !== undefined && typeof tokens[i + 1] === 'number') {
+    } else if (tokens[i + 1] && !isNaN(tokens[i + 1])) {
       node = node[token] = []
     } else {
       node = node[token] = {}
@@ -39,8 +38,7 @@ function setValue (root, path, value) {
  */
 function tokenize (path) {
   const tokens = []
-
-  const parts = path.split('.')
+  const parts = path.split(SPLIT_REG_EXP)
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i].trim()
@@ -49,18 +47,14 @@ function tokenize (path) {
       continue
     }
 
-    const arrayIndexes = part.split(SPLIT_REG_EXP)
-
-    tokens.push(arrayIndexes[0])
-
-    for (let j = 1; j < arrayIndexes.length; j++) {
-      if (arrayIndexes[j].length === 0) {
-        continue
-      }
-
-      tokens.push(Number(arrayIndexes[j]))
+    if (!isNaN(part)) {
+      tokens.push(parseInt(part, 10))
+      continue
     }
+
+    tokens.push(part)
   }
+
   return tokens
 }
 
